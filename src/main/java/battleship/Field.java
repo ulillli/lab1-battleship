@@ -3,9 +3,11 @@ package battleship;
 import java.util.Random;
 
 public class Field {
+    public static final int SIZE = 10;
+
     // 0 - вода, 1..10 - номер корабля в клетке
-    private final int[][] ships = new int[10][10];
-    private final boolean[][] shot = new boolean[10][10];
+    private final int[][] ships = new int[SIZE][SIZE];
+    private final boolean[][] shot = new boolean[SIZE][SIZE];
     private final int[] decksLeft = new int[11];
     private int shipsLeft = 10;
 
@@ -19,8 +21,8 @@ public class Field {
             int col;
             do {
                 vertical = random.nextBoolean();
-                row = random.nextInt(vertical ? 11 - size : 10);
-                col = random.nextInt(vertical ? 10 : 11 - size);
+                row = random.nextInt(vertical ? SIZE - size + 1 : SIZE);
+                col = random.nextInt(vertical ? SIZE : SIZE - size + 1);
             } while (!isFree(row, col, size, vertical));
 
             for (int k = 0; k < size; k++) {
@@ -37,8 +39,8 @@ public class Field {
     private boolean isFree(int row, int col, int size, boolean vertical) {
         int lastRow = vertical ? row + size - 1 : row;
         int lastCol = vertical ? col : col + size - 1;
-        for (int i = Math.max(row - 1, 0); i <= Math.min(lastRow + 1, 9); i++) {
-            for (int j = Math.max(col - 1, 0); j <= Math.min(lastCol + 1, 9); j++) {
+        for (int i = Math.max(row - 1, 0); i <= Math.min(lastRow + 1, SIZE - 1); i++) {
+            for (int j = Math.max(col - 1, 0); j <= Math.min(lastCol + 1, SIZE - 1); j++) {
                 if (ships[i][j] != 0) {
                     return false;
                 }
@@ -68,18 +70,29 @@ public class Field {
         return shipsLeft == 0;
     }
 
-    public String draw(boolean showShips) {
-        StringBuilder sb = new StringBuilder("   A B C D E F G H I J\n");
-        for (int r = 0; r < 10; r++) {
-            sb.append(String.format("%2d ", r + 1));
-            for (int c = 0; c < 10; c++) {
+    public char[][] view(boolean showShips) {
+        char[][] cells = new char[SIZE][SIZE];
+        for (int r = 0; r < SIZE; r++) {
+            for (int c = 0; c < SIZE; c++) {
                 char ch = '~';
                 if (shot[r][c]) {
                     ch = ships[r][c] != 0 ? 'X' : 'o';
                 } else if (showShips && ships[r][c] != 0) {
                     ch = '#';
                 }
-                sb.append(ch).append(' ');
+                cells[r][c] = ch;
+            }
+        }
+        return cells;
+    }
+
+    public String draw(boolean showShips) {
+        char[][] cells = view(showShips);
+        StringBuilder sb = new StringBuilder("   A B C D E F G H I J\n");
+        for (int row = 0; row < SIZE; row++) {
+            sb.append(String.format("%2d ", row + 1));
+            for (char cell : cells[row]) {
+                sb.append(cell).append(' ');
             }
             sb.append('\n');
         }

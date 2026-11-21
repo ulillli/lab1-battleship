@@ -12,5 +12,7 @@ public interface Game extends Remote {
 
     String getBoards(int player) throws RemoteException;
 
+    GameState getState(int player) throws RemoteException;
+
     String shoot(int player, int row, int col) throws RemoteException;
 }

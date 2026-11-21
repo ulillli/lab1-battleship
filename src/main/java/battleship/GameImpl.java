@@ -39,6 +39,7 @@ public class GameImpl extends UnicastRemoteObject implements Game {
     }
 
     public synchronized String getBoards(int player) {
+        checkPlayer(player);
         String text = "Ваше поле:\n" + fields[player].draw(true)
                 + "Поле соперника:\n" + fields[1 - player].draw(false)
                 + "# - корабль, X - попадание, o - промах\n";
@@ -48,9 +49,27 @@ public class GameImpl extends UnicastRemoteObject implements Game {
         return text;
     }
 
+    @Override
+    public synchronized GameState getState(int player) {
+        checkPlayer(player);
+        return new GameState(getTurn(), winner, fields[player].view(true), fields[1 - player].view(false));
+    }
+
+    private void checkPlayer(int player) {
+        if (player < 0 || player >= players) {
+            throw new IllegalArgumentException("Игрок не подключён");
+        }
+    }
+
     public synchronized String shoot(int player, int row, int col) {
+        if (players < 2) {
+            return "ожидаем второго игрока";
+        }
         if (player != turn || winner != -1) {
             return "сейчас не ваш ход";
+        }
+        if (row < 0 || row >= Field.SIZE || col < 0 || col >= Field.SIZE) {
+            return "неверные координаты";
         }
         Field enemy = fields[1 - player];
         String result = enemy.shoot(row, col);
